@@ -46,7 +46,7 @@ const UploadImages = () => {
     }
   };
 
-  const handleProcess = () => {
+  const handleProcess = async () => {
     if (citologyFiles.length === 0 && mriFiles.length === 0) {
       toast({
         title: "Error",
@@ -55,7 +55,36 @@ const UploadImages = () => {
       });
       return;
     }
-    navigate("/processing");
+
+    const form = new FormData();
+    citologyFiles.forEach((f) => form.append("citology", f));
+    mriFiles.forEach((f) => form.append("mri", f));
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "http://localhost:8000/api/analyze");
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        setUploadProgress(percent);
+      }
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          const jobId = res.jobId;
+          navigate("/processing", { state: { jobId } });
+        } catch {
+          toast({ title: "Error", description: "Respuesta inválida del servidor", variant: "destructive" });
+        }
+      } else {
+        toast({ title: "Error", description: "Error subiendo archivos", variant: "destructive" });
+      }
+    };
+    xhr.onerror = () => {
+      toast({ title: "Error", description: "No se pudo conectar con el servidor", variant: "destructive" });
+    };
+    xhr.send(form);
   };
 
   return (

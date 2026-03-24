@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Brain, CheckCircle2, Loader2 } from "lucide-react";
@@ -16,35 +16,43 @@ const Processing = () => {
     { name: "Generación de informe", duration: 2000 },
   ];
 
+  const location = useLocation();
+  const state = location.state as { jobId?: string } | null;
+  const jobId = state?.jobId;
+
   useEffect(() => {
-    let stepIndex = 0;
-    let totalTime = 0;
-    const totalDuration = steps.reduce((acc, step) => acc + step.duration, 0);
+    if (!jobId) {
+      const t = setTimeout(() => navigate("/dashboard"), 800);
+      return () => clearTimeout(t);
+    }
 
-    const processSteps = () => {
-      if (stepIndex < steps.length) {
-        setCurrentStep(stepIndex);
-        const stepDuration = steps[stepIndex].duration;
-        
-        const interval = setInterval(() => {
-          totalTime += 100;
-          setProgress((totalTime / totalDuration) * 100);
-        }, 100);
-
-        setTimeout(() => {
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/api/status/${jobId}`);
+        if (!res.ok) throw new Error("status fetch failed");
+        const data = await res.json();
+        if (cancelled) return;
+        setProgress(data.progress ?? 0);
+        if (data.current_step) {
+          setCurrentStep(data.current_step.index ?? 0);
+        }
+        if (data.status === "completed") {
           clearInterval(interval);
-          stepIndex++;
-          if (stepIndex < steps.length) {
-            processSteps();
-          } else {
-            setTimeout(() => navigate("/results"), 500);
-          }
-        }, stepDuration);
+          const r = await fetch(`http://localhost:8000/api/results/${jobId}`);
+          const jr = await r.json();
+          navigate("/results", { state: { result: jr.result, jobId } });
+        }
+      } catch (err) {
+        console.error(err);
       }
-    };
+    }, 1000);
 
-    processSteps();
-  }, [navigate]);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [jobId, navigate]);
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center">

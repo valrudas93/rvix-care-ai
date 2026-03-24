@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,11 @@ const Results = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Simulated results
+  const location = useLocation();
+  const state = location.state as { result?: any; jobId?: string } | null;
+  const [serverResult, setServerResult] = useState(state?.result ?? null);
+
+  // Simulated results (fallback)
   const results = {
     riskLevel: "medio",
     confidence: 87.5,
@@ -65,14 +70,14 @@ const Results = () => {
               variant="outline" 
               className="text-lg px-4 py-2 border-2 border-primary bg-primary-light text-primary font-semibold"
             >
-              {results.riskLevel.toUpperCase()}
+              {(serverResult ?? results).riskLevel.toUpperCase()}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 text-muted-foreground">
             <AlertCircle className="h-5 w-5" />
-            <span>Nivel de confianza: {results.confidence}%</span>
+            <span>Nivel de confianza: {(serverResult ?? results).confidence}%</span>
           </div>
         </CardContent>
       </Card>
@@ -83,12 +88,12 @@ const Results = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base">{results.model1.name}</CardTitle>
+              <CardTitle className="text-base">{(serverResult ?? results).model1.name}</CardTitle>
             </div>
-            <CardDescription>Estado: {results.model1.status}</CardDescription>
+            <CardDescription>Estado: {(serverResult ?? results).model1.status}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm">{results.model1.findings}</p>
+            <p className="text-sm">{(serverResult ?? results).model1.findings}</p>
           </CardContent>
         </Card>
 
@@ -96,12 +101,12 @@ const Results = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base">{results.model2.name}</CardTitle>
+              <CardTitle className="text-base">{(serverResult ?? results).model2.name}</CardTitle>
             </div>
-            <CardDescription>Estado: {results.model2.status}</CardDescription>
+            <CardDescription>Estado: {(serverResult ?? results).model2.status}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm">{results.model2.findings}</p>
+            <p className="text-sm">{(serverResult ?? results).model2.findings}</p>
           </CardContent>
         </Card>
       </div>
@@ -114,7 +119,7 @@ const Results = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {results.detectedRegions.map((region, index) => (
+            {(serverResult ?? results).detectedRegions.map((region, index) => (
               <Badge key={index} variant="secondary" className="text-sm py-1 px-3">
                 {region}
               </Badge>
@@ -131,7 +136,7 @@ const Results = () => {
         </CardHeader>
         <CardContent>
           <ul className="space-y-3">
-            {results.recommendations.map((rec, index) => (
+            {(serverResult ?? results).recommendations.map((rec, index) => (
               <li key={index} className="flex items-start gap-3">
                 <div className="mt-0.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
                 <span className="text-sm">{rec}</span>
