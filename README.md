@@ -1,73 +1,118 @@
-# Welcome to your Lovable project
+# VARIME
 
-## Project info
+**Herramienta de apoyo al diagnóstico del cáncer de cuello uterino mediante inteligencia artificial**
 
-**URL**: https://lovable.dev/projects/9f56ee93-2906-4d56-96ea-676bb7df867a
+Sistema de doble modelo Vision Transformer (ViT) para clasificación citológica y análisis de heterogeneidad tumoral, con generación de informes médicos asistida por Claude AI.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## Estructura del monorepo
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/9f56ee93-2906-4d56-96ea-676bb7df867a) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+rvix-care-ai/
+├── backend/          # API REST — FastAPI + Python 3.11
+├── frontend/         # Interfaz web — React + Vite + TypeScript
+├── docs/             # Documentación técnica adicional
+├── docker-compose.yml
+├── .env.example      # Plantilla de variables de entorno
+├── dev.ps1           # Script de desarrollo (Windows)
+└── dev.sh            # Script de desarrollo (macOS/Linux)
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Requisitos
 
-**Use GitHub Codespaces**
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) >= 24
+- Docker Compose >= 2.20
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## Inicio rápido
 
-This project is built with:
+### 1. Clonar y configurar variables de entorno
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```bash
+git clone <URL_DEL_REPO>
+cd rvix-care-ai
 
-## How can I deploy this project?
+cp .env.example .env
+# Editar .env con tus valores reales (mínimo ANTHROPIC_API_KEY)
+```
 
-Simply open [Lovable](https://lovable.dev/projects/9f56ee93-2906-4d56-96ea-676bb7df867a) and click on Share -> Publish.
+### 2. Colocar los modelos ViT
 
-## Can I connect a custom domain to my Lovable project?
+```
+backend/app/ai_models/vision_models/vit_sipakmed_final.keras
+backend/app/ai_models/vision_models/vit_tcia_heterogeneidad_final.keras
+```
 
-Yes, you can!
+> Sin los archivos `.keras` el sistema opera en modo simulado (mock).
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### 3. Desplegar
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```bash
+docker compose up --build -d
+```
+
+| Servicio     | URL                          |
+|--------------|------------------------------|
+| Frontend     | http://localhost:8080        |
+| Backend API  | http://localhost:8000        |
+| Swagger/Docs | http://localhost:8000/docs   |
+| PostgreSQL   | localhost:5432               |
+
+### 4. Detener
+
+```bash
+docker compose down
+```
+
+---
+
+## Flujo de uso
+
+```
+Registro / Login  →  Datos clínicos (paciente)  →  Carga de imágenes
+       ↓
+  POST /api/analyze   (citología + resonancia)
+       ↓
+  Polling /api/status/{jobId}
+       ↓
+  Resultados: clasificación ViT + explicación Claude AI
+       ↓
+  Descarga informe PDF  |  Enviar por correo al médico tratante
+```
+
+---
+
+## Modelos de IA
+
+| Modelo | Dataset | Clases | Tarea |
+|--------|---------|--------|-------|
+| ViT Sipakmed | SIPaKMeD | Normal / Anormal | Clasificación citológica |
+| ViT TCIA | TCIA Heterogeneity | Bajo / Medio / Alto riesgo | Heterogeneidad tumoral |
+
+---
+
+## Tecnologías
+
+**Backend:** FastAPI · SQLAlchemy · PostgreSQL · Alembic · TensorFlow/Keras · Anthropic Claude API
+
+**Frontend:** React 18 · TypeScript · Vite · Tailwind CSS · shadcn/ui · React Router
+
+**Infraestructura:** Docker Compose · PostgreSQL 16
+
+---
+
+## Variables de entorno
+
+Ver [`.env.example`](.env.example) para la lista completa de variables requeridas.
+
+---
+
+## Documentación adicional
+
+- [`docs/INTEGRATION_GUIDE.md`](docs/INTEGRATION_GUIDE.md) — Guía de integración de modelos y proveedores LLM
+- [`docs/QUICK_START.md`](docs/QUICK_START.md) — Arranque rápido sin Docker
+- [`backend/README.md`](backend/README.md) — Documentación técnica del backend

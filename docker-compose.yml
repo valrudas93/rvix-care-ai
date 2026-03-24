@@ -1,27 +1,56 @@
-version: '3.8'
-
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: varime-db
+    environment:
+      POSTGRES_USER: cerviai
+      POSTGRES_PASSWORD: cerviai
+      POSTGRES_DB: cervical_ai_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cerviai -d cervical_ai_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
+    container_name: varime-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
     volumes:
       - ./backend:/app
+      - ./backend/uploads:/app/uploads
     ports:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://cerviai:cerviai@db:5432/cervical_ai_db
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:8080
+      - LLM_PROVIDER=anthropic
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
+    container_name: varime-frontend
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: ./frontend
+      dockerfile: Dockerfile
     volumes:
-      - ./:/app
+      - ./frontend:/app
       - /app/node_modules
     ports:
-      - "5173:5173"
+      - "8080:8080"
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - VITE_API_URL=http://localhost:8000
     depends_on:
       - backend
+
+volumes:
+  postgres_data:

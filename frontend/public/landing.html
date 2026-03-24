@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="VARIME — sistema de inteligencia artificial para detección temprana de cáncer cervical mediante análisis de citología e imágenes de resonancia magnética." />
+  <title>VARIME — Detección Temprana de Cáncer Cervical con IA</title>
+
+  <!-- Fuente Inter desde Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Iconos Lucide vía CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.446.0/dist/umd/lucide.min.js"></script>
+
+  <style>
+    /* =====================================================================
+       VARIABLES DE DISEÑO — extraídas de index.css del proyecto VARIME
+       Paleta médica fuchsia/rosa, tipografía Inter, radio 0.75rem
+    ===================================================================== */
+    :root {
+      --color-primary:       hsl(332, 75%, 51%);
+      --color-primary-hover: hsl(332, 75%, 44%);
+      --color-primary-light: hsl(332, 100%, 95%);
+      --color-primary-pale:  hsl(332, 100%, 98%);
+      --color-bg:            hsl(0, 0%, 100%);
+      --color-text:          hsl(332, 18%, 20%);
+      --color-muted:         hsl(215, 16%, 47%);
+      --color-border:        hsl(332, 20%, 92%);
+      --color-accent-bg:     hsl(214, 32%, 91%);
+
+      --gradient-medical:    linear-gradient(135deg, hsl(332, 75%, 51%) 0%, hsl(320, 70%, 60%) 100%);
+      --gradient-soft:       linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(332, 100%, 98%) 100%);
+      --gradient-hero:       linear-gradient(160deg, hsl(332, 30%, 8%) 0%, hsl(332, 45%, 18%) 60%, hsl(320, 50%, 22%) 100%);
+
+      --shadow-medical:      0 4px 24px -4px hsl(332, 75%, 51%, 0.22);
+      --shadow-card:         0 2px 14px -2px hsl(332, 20%, 60%, 0.10);
+      --shadow-card-hover:   0 8px 32px -4px hsl(332, 75%, 51%, 0.18);
+
+      --radius:              0.75rem;
+      --radius-xl:           1.25rem;
+      --radius-pill:         999px;
+
+      --font:                'Inter', system-ui, -apple-system, sans-serif;
+      --max-width:           1200px;
+    }
+
+    /* =====================================================================
+       RESET Y BASE
+    ===================================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: var(--font);
+      color: var(--color-text);
+      background: var(--color-bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img { max-width: 100%; display: block; }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* =====================================================================
+       UTILIDADES
+    ===================================================================== */
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Etiqueta de sección (eyebrow) */
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--radius-pill);
+      margin-bottom: 1rem;
+    }
+
+    /* Botones */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+    }
+    .btn:hover  { opacity: 0.92; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: var(--gradient-medical);
+      color: #fff;
+      box-shadow: var(--shadow-medical);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--color-primary);
+      border: 2px solid var(--color-primary);
+    }
+    .btn-outline:hover { background: var(--color-primary-light); }
+    .btn-ghost-white {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.35);
+      backdrop-filter: blur(8px);
+    }
+    .btn-ghost-white:hover { background: rgba(255,255,255,0.22); }
+
+    /* Card base */
+    .card {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-card);
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+    .card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
+
+    /* Separador visual */
+    .divider {
+      width: 3rem;
+      height: 3px;
+      background: var(--gradient-medical);
+      border-radius: var(--radius-pill);
+      margin: 1rem 0;
+    }
+
+    /* =====================================================================
+       ANIMACIONES DE ENTRADA POR SCROLL (fade-up)
+    ===================================================================== */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Escalonado para grupos de elementos */
+    .fade-in:nth-child(2) { transition-delay: 0.1s; }
+    .fade-in:nth-child(3) { transition-delay: 0.2s; }
+    .fade-in:nth-child(4) { transition-delay: 0.3s; }
+
+    /* =====================================================================
+       NAVEGACIÓN
+    ===================================================================== */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--color-border);
+      transition: background 0.3s;
+    }
+
+    .nav__inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.875rem 1.5rem;
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    /* Logo de navegación: icono Brain + nombre del proyecto */
+    .nav__logo {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      font-weight: 800;
+      font-size: 1.125rem;
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+    }
+
+    .nav__logo-icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.625rem;
+      background: var(--gradient-medical);
+      box-shadow: var(--shadow-medical);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nav__links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      list-style: none;
+    }
+
+    .nav__links a {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-muted);
+      padding: 0.5rem 0.875rem;
+      border-radius: var(--radius);
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav__links a:hover {
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+    }
+
+    .nav__cta { margin-left: 0.75rem; }
+
+    /* Menú móvil */
+    .nav__menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-text);
+      padding: 0.25rem;
+    }
+
+    @media (max-width: 768px) {
+      .nav__links, .nav__cta { display: none; }
+      .nav__menu-btn        { display: block; }
+    }
+
+    /* =====================================================================
+       1. HERO
+    ===================================================================== */
+    .hero {
+      min-height: 100vh;
+      background: var(--gradient-hero);
+      display: flex;
+      align-items: center;
+      padding: 7rem 0 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Círculos decorativos de fondo */
+    .hero::before,
+    .hero::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, hsl(332, 75%, 51%, 0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::before { width: 60vw; height: 60vw; top: -20%; right: -15%; }
+    .hero::after  { width: 40vw; height: 40vw; bottom: -10%; left: -10%; }
+
+    .hero__inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.9);
+      padding: 0.375rem 0.875rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero__title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: #fff;
+      max-width: 760px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero__title span {
+      background: var(--gradient-medical);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero__subtitle {
+      font-size: 1.125rem;
+      color: rgba(255,255,255,0.72);
+      max-width: 560px;
+      margin-bottom: 2.5rem;
+      line-height: 1.65;
+    }
+
+    .hero__actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* Tarjetas de estadísticas flotantes debajo del héroe */
+    .hero__stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 4rem;
+    }
+
+    .hero__stat {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: var(--radius-xl);
+      padding: 1.25rem 1.5rem;
+      backdrop-filter: blur(8px);
+    }
+
+    .hero__stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .hero__stat-label {
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .hero__stat-source {
+      font-size: 0.6875rem;
+      color: rgba(255,255,255,0.4);
+      margin-top: 0.25rem;
+    }
+
+    @media (max-width: 640px) {
+      .hero__stats { grid-template-columns: 1fr 1fr; }
+      .hero__stat:last-child { grid-column: 1 / -1; }
+    }
+
+    /* =====================================================================
+       SECCIONES — patrón general
+    ===================================================================== */
+    .section {
+      padding: 5rem 0;
+    }
+
+    .section--alt {
+      background: var(--gradient-soft);
+    }
+
+    .section__header {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 3.5rem;
+    }
+
+    .section__title {
+      font-size: clamp(1.625rem, 3.5vw, 2.25rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    .section__desc {
+      color: var(--color-muted);
+      font-size: 1.0625rem;
+      line-height: 1.65;
+    }
+
+    /* =====================================================================
+       2. EL PROBLEMA
+    ===================================================================== */
+    .problema__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .problema__text p {
+      color: var(--color-muted);
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .problema__text strong { color: var(--color-text); }
+
+    .problema__stats {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .stat-card {
+      padding: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .stat-card__icon {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: var(--radius);
+      background: var(--color-primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--color-primary);
+    }
+
+    .stat-card__number {
+      font-size: 1.875rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-card__label {
+      font-size: 0.875rem;
+      color: var(--color-text);
+      font-weight: 500;
+      margin-bottom: 0.125rem;
+    }
+
+    .stat-card__note {
+      font-size: 0.75rem;
+      color: var(--color-muted);
+    }
+
+    @media (max-width: 768px) {
+      .problema__grid { grid-template-columns: 1fr; }
+    }
+
+    /* =====================================================================
+       3. QUÉ ES VARIME
+    ===================================================================== */
+    .que-es__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .feature-card__icon {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: var(--radius-xl);
+      background: var(--gradient-medical);
+      box-shadow: var(--shadow-medical);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+      color: white;
+    }
+
+    .feature-card__title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.625rem;
+    }
+
+    .feature-card__desc {
+      font-size: 0.875rem;
+      color: var(--color-muted);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+      .que-es__grid { grid-template-columns: 1fr; }
+    }
+
+    /* =====================================================================
+       4. CÓMO FUNCIONA — DOS MÓDULOS
+    ===================================================================== */
+    .modulos__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .modulo-card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    /* Cabecera del módulo con gradiente suave */
+    .modulo-card__header {
+      padding: 1.75rem 2rem 1.5rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .modulo-card__number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.875rem;
+      height: 1.875rem;
+      border-radius: 50%;
+      background: var(--gradient-medical);
+      color: white;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .modulo-card__title {
+      font-size: 1.1875rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.375rem;
+    }
+
+    .modulo-card__subtitle {
+      font-size: 0.8125rem;
+      color: var(--color-muted);
+      font-weight: 500;
+    }
+
+    .modulo-card__body {
+      padding: 1.75rem 2rem;
+    }
+
+    /* Pasos de flujo dentro del módulo */
+    .modulo-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.125rem;
+    }
+
+    .modulo-step {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .modulo-step__icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: var(--radius);
+      background: var(--color-primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--color-primary);
+    }
+
+    .modulo-step__label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--color-primary);
+      margin-bottom: 0.125rem;
+    }
+
+    .modulo-step__text {
+      font-size: 0.875rem;
+      color: var(--color-text);
+      line-height: 1.55;
+    }
+
+    /* Caja de resultado */
+    .modulo-result {
+      margin-top: 1.5rem;
+      padding: 1.125rem;
+      background: var(--color-primary-light);
+      border-radius: var(--radius);
+      border-left: 3px solid var(--color-primary);
+    }
+
+    .modulo-result__label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--color-primary);
+      margin-bottom: 0.375rem;
+    }
+
+    .modulo-result__text {
+      font-size: 0.875rem;
+      color: var(--color-text);
+      line-height: 1.5;
+    }
+
+    /* Dataset badge */
+    .dataset-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--color-accent-bg);
+      color: hsl(215, 25%, 27%);
+      padding: 0.25rem 0.625rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      margin-top: 0.875rem;
+    }
+
+    @media (max-width: 768px) {
+      .modulos__grid { grid-template-columns: 1fr; }
+    }
+
+    /* =====================================================================
+       5. POR QUÉ VISION TRANSFORMERS
+    ===================================================================== */
+    .vit__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    .vit__text .divider { margin-bottom: 1.5rem; }
+
+    .vit__text p {
+      color: var(--color-muted);
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    /* Comparación visual CNN vs ViT */
+    .vit__comparison {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .compare-card {
+      padding: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .compare-card__icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .compare-card--cnn .compare-card__icon {
+      background: var(--color-accent-bg);
+      color: hsl(215, 25%, 40%);
+    }
+
+    .compare-card--vit .compare-card__icon {
+      background: var(--gradient-medical);
+      color: white;
+      box-shadow: var(--shadow-medical);
+    }
+
+    .compare-card__title {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      margin-bottom: 0.375rem;
+    }
+
+    .compare-card__desc {
+      font-size: 0.8125rem;
+      color: var(--color-muted);
+      line-height: 1.55;
+    }
+
+    /* Ventajas ViT en lista */
+    .vit__advantages {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+
+    .vit__advantage {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      font-size: 0.875rem;
+      color: var(--color-text);
+    }
+
+    .vit__advantage::before {
+      content: '';
+      display: inline-block;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: var(--gradient-medical);
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .vit__grid { grid-template-columns: 1fr; }
+    }
+
+    /* =====================================================================
+       6. METODOLOGÍA
+    ===================================================================== */
+    .metodologia__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .metodologia-card {
+      padding: 2rem;
+    }
+
+    .metodologia-card__tag {
+      display: inline-block;
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.25rem 0.625rem;
+      border-radius: var(--radius-pill);
+      margin-bottom: 1rem;
+    }
+
+    .metodologia-card__name {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+
+    .metodologia-card__desc {
+      font-size: 0.875rem;
+      color: var(--color-muted);
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Pasos del proceso metodológico */
+    .metodologia-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .metodologia-step-pill {
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: var(--color-primary-pale);
+      color: var(--color-text);
+      padding: 0.3rem 0.75rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--color-border);
+    }
+
+    @media (max-width: 640px) {
+      .metodologia__grid { grid-template-columns: 1fr; }
+    }
+
+    /* =====================================================================
+       7. CONTEXTO ACADÉMICO
+    ===================================================================== */
+    .academia {
+      background: var(--gradient-hero);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .academia::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 80% 50%, hsl(332, 75%, 51%, 0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .academia .section-tag {
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .academia .section__title { color: white; }
+    .academia .section__desc  { color: rgba(255,255,255,0.68); }
+
+    .academia__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .academia-card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      backdrop-filter: blur(8px);
+      transition: background 0.25s;
+    }
+
+    .academia-card:hover { background: rgba(255,255,255,0.11); }
+
+    .academia-card__icon {
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: var(--radius);
+      background: var(--gradient-medical);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      color: white;
+      box-shadow: var(--shadow-medical);
+    }
+
+    .academia-card__label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: hsl(332, 80%, 72%);
+      margin-bottom: 0.375rem;
+    }
+
+    .academia-card__value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      line-height: 1.4;
+    }
+
+    /* Logo placeholder de la USB */
+    .usb-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: var(--radius-xl);
+      padding: 0.875rem 1.5rem;
+      margin-top: 2.5rem;
+    }
+
+    .usb-logo__icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      background: white;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--color-primary);
+    }
+
+    .usb-logo__text {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: white;
+      line-height: 1.3;
+    }
+
+    .usb-logo__sub {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+      font-weight: 400;
+    }
+
+    @media (max-width: 768px) {
+      .academia__grid { grid-template-columns: 1fr; }
+    }
+
+    /* =====================================================================
+       8. FOOTER
+    ===================================================================== */
+    .footer {
+      background: var(--color-text);
+      color: rgba(255,255,255,0.85);
+      padding: 3rem 0 2rem;
+    }
+
+    .footer__top {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 3rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 2rem;
+    }
+
+    .footer__logo {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      font-weight: 800;
+      font-size: 1.125rem;
+      color: white;
+      margin-bottom: 1rem;
+    }
+
+    .footer__logo-icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.625rem;
+      background: var(--gradient-medical);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .footer__tagline {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Aviso de uso responsable */
+    .footer__disclaimer {
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,0.45);
+      padding: 0.875rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border-left: 3px solid hsl(332, 75%, 51%, 0.6);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      line-height: 1.55;
+    }
+
+    .footer__section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: hsl(332, 60%, 70%);
+      margin-bottom: 1rem;
+    }
+
+    .footer__links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+
+    .footer__links a {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.55);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.2s;
+    }
+    .footer__links a:hover { color: white; }
+
+    .footer__bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,0.35);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .footer__top { grid-template-columns: 1fr; gap: 2rem; }
+      .footer__bottom { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ===================================================================
+       NAVEGACIÓN FIJA
+  ==================================================================== -->
+  <nav class="nav" role="navigation" aria-label="Navegación principal">
+    <div class="nav__inner">
+
+      <!-- Logo: mismo patrón que la app — Brain icon + nombre -->
+      <a class="nav__logo" href="#inicio" aria-label="VARIME - Inicio">
+        <div class="nav__logo-icon" aria-hidden="true">
+          <!-- SVG inline del ícono Brain (Lucide) para el logo -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true">
+            <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+            <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+            <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
+            <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/>
+            <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/>
+            <path d="M3.477 10.896a4 4 0 0 1 .585-.396"/>
+            <path d="M19.938 10.5a4 4 0 0 1 .585.396"/>
+            <path d="M6 18a4 4 0 0 1-1.967-.516"/>
+            <path d="M19.967 17.484A4 4 0 0 1 18 18"/>
+          </svg>
+        </div>
+        VARIME
+      </a>
+
+      <!-- Links de navegación -->
+      <ul class="nav__links">
+        <li><a href="#problema">El problema</a></li>
+        <li><a href="#que-es">Qué es</a></li>
+        <li><a href="#modulos">Cómo funciona</a></li>
+        <li><a href="#metodologia">Metodología</a></li>
+        <li><a href="#academia">Proyecto</a></li>
+      </ul>
+
+      <div class="nav__cta">
+        <a class="btn btn-primary" href="#modulos" style="font-size:0.875rem; padding:0.6rem 1.125rem;">
+          Ver cómo funciona
+        </a>
+      </div>
+
+      <!-- Botón menú móvil (se activa vía JS al final del archivo) -->
+      <button class="nav__menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" y1="6" x2="20" y2="6"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="18" x2="20" y2="18"/>
+        </svg>
+      </button>
+
+    </div>
+  </nav>
+
+
+  <!-- ===================================================================
+       SECCIÓN 1: HERO
+       Titular centrado en el problema, no en la solución
+  ==================================================================== -->
+  <section class="hero" id="inicio" aria-labelledby="hero-title">
+    <div class="container hero__inner">
+
+      <div class="hero__badge fade-in">
+        <!-- Punto de estado animado -->
+        <span style="width:0.5rem;height:0.5rem;border-radius:50%;background:#4ade80;animation:pulse 2s infinite" aria-hidden="true"></span>
+        Proyecto de tesis &mdash; Universidad de San Buenaventura, Cali
+      </div>
+
+      <h1 class="hero__title fade-in" id="hero-title">
+        El cáncer de cuello uterino mata a miles de mujeres colombianas cada año.
+        <span>VARIME ayuda a detectarlo antes.</span>
+      </h1>
+
+      <p class="hero__subtitle fade-in">
+        Un sistema de inteligencia artificial que asiste a profesionales de salud
+        en el diagnóstico temprano de cáncer cervical, combinando análisis de citología
+        e imágenes de resonancia magnética mediante modelos Vision Transformer.
+      </p>
+
+      <div class="hero__actions fade-in">
+        <a class="btn btn-primary" href="#modulos">
+          <!-- Ícono Play inline -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
+          </svg>
+          Ver cómo funciona
+        </a>
+        <a class="btn btn-ghost-white" href="#problema">
+          <!-- Ícono ChevronDown inline -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+          Conocer el contexto
+        </a>
+      </div>
+
+      <!-- Tarjetas de estadísticas -->
+      <div class="hero__stats" role="list">
+        <div class="hero__stat fade-in" role="listitem">
+          <div class="hero__stat-value">4 200<sup style="font-size:1rem">*</sup></div>
+          <div class="hero__stat-label">casos nuevos por año en Colombia</div>
+          <div class="hero__stat-source">*[Fuente: Instituto Nacional de Cancerología — placeholder]</div>
+        </div>
+        <div class="hero__stat fade-in" role="listitem">
+          <div class="hero__stat-value">2.°</div>
+          <div class="hero__stat-label">cáncer más frecuente en mujeres colombianas</div>
+          <div class="hero__stat-source">*[Fuente: Globocan / INCA — placeholder]</div>
+        </div>
+        <div class="hero__stat fade-in" role="listitem">
+          <div class="hero__stat-value">90<span style="font-size:1.25rem">%</span></div>
+          <div class="hero__stat-label">de muertes son evitables con detección temprana</div>
+          <div class="hero__stat-source">*[Fuente: OMS — placeholder]</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ===================================================================
+       SECCIÓN 2: EL PROBLEMA
+       Contexto colombiano / Valle del Cauca
+  ==================================================================== -->
+  <section class="section" id="problema" aria-labelledby="problema-title">
+    <div class="container">
+
+      <div class="section__header fade-in">
+        <span class="section-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          El problema
+        </span>
+        <h2 class="section__title" id="problema-title">
+          El diagnóstico tardío cuesta vidas en Colombia
+        </h2>
+        <p class="section__desc">
+          El cáncer de cuello uterino es una enfermedad prevenible. Sin embargo,
+          las brechas en acceso, infraestructura y personal especializado
+          hacen que muchos casos se detecten cuando el tratamiento ya es limitado.
+        </p>
+      </div>
+
+      <div class="problema__grid">
+
+        <!-- Texto contextual -->
+        <div class="problema__text fade-in">
+          <p>
+            En el <strong>Valle del Cauca</strong>, la incidencia de cáncer cervical
+            supera el promedio nacional. Las mujeres en zonas rurales y municipios
+            alejados de Cali enfrentan demoras de semanas —o meses— para obtener
+            una lectura de citología por parte de un citopatólogo calificado.
+          </p>
+          <p>
+            Colombia cuenta con un sistema de tamizaje basado en el
+            <strong>frotis de Papanicolaou</strong>, pero la <strong>escasez de
+            especialistas</strong>, la falta de equipos de resonancia en centros
+            de atención primaria y los tiempos de procesamiento prolongados
+            generan cuellos de botella que retrasan el diagnóstico.
+          </p>
+          <p>
+            Detectar una lesión precancerosa en estadio temprano puede significar
+            la diferencia entre un tratamiento ambulatorio sencillo y una
+            intervención oncológica mayor. <strong>El tiempo importa.</strong>
+          </p>
+          <p style="font-size:0.8125rem; color:var(--color-muted); margin-top:1.5rem;">
+            Los datos citados son cifras de referencia con fines académicos.
+            Las fuentes exactas deben contrastarse con las publicaciones más recientes
+            del Instituto Nacional de Cancerología (INC), Globocan y la OPS.
+          </p>
+        </div>
+
+        <!-- Tarjetas de estadísticas -->
+        <div class="problema__stats">
+          <div class="card stat-card fade-in">
+            <div class="stat-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-card__number">~4 200<sup>*</sup></div>
+              <div class="stat-card__label">casos nuevos / año en Colombia</div>
+              <div class="stat-card__note">[Fuente: INC — placeholder]</div>
+            </div>
+          </div>
+
+          <div class="card stat-card fade-in">
+            <div class="stat-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-card__number">Tasa alta<sup>*</sup></div>
+              <div class="stat-card__label">de incidencia en el Valle del Cauca</div>
+              <div class="stat-card__note">[Fuente: Globocan / OPS — placeholder]</div>
+            </div>
+          </div>
+
+          <div class="card stat-card fade-in">
+            <div class="stat-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-card__number">Semanas<sup>*</sup></div>
+              <div class="stat-card__label">de espera promedio para lectura citológica</div>
+              <div class="stat-card__note">[Estimación basada en literatura — placeholder]</div>
+            </div>
+          </div>
+
+          <div class="card stat-card fade-in">
+            <div class="stat-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-card__number">90 %<sup>*</sup></div>
+              <div class="stat-card__label">de muertes son prevenibles con tamizaje oportuno</div>
+              <div class="stat-card__note">[Fuente: OMS — placeholder]</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================================
+       SECCIÓN 3: QUÉ ES VARIME
+  ==================================================================== -->
+  <section class="section section--alt" id="que-es" aria-labelledby="que-es-title">
+    <div class="container">
+
+      <div class="section__header fade-in">
+        <span class="section-tag">Qué es VARIME</span>
+        <h2 class="section__title" id="que-es-title">
+          Una herramienta de apoyo al diagnóstico, no una caja negra
+        </h2>
+        <p class="section__desc">
+          VARIME (<em>VAloración de RIesgo MEdiante inteligencia artificial</em>) es un sistema
+          de aprendizaje profundo que analiza imágenes médicas cervicales y entrega
+          un resultado estructurado al profesional de salud, que siempre tiene la última palabra.
+        </p>
+      </div>
+
+      <div class="que-es__grid">
+
+        <div class="card feature-card fade-in">
+          <div class="feature-card__icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+          <h3 class="feature-card__title">Análisis automatizado</h3>
+          <p class="feature-card__desc">
+            Procesa imágenes de citología y resonancia magnética en segundos,
+            reduciendo los tiempos de espera de semanas a minutos para el primer
+            resultado orientativo.
+          </p>
+        </div>
+
+        <div class="card feature-card fade-in">
+          <div class="feature-card__icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+              <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+              <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
+            </svg>
+          </div>
+          <h3 class="feature-card__title">Dos modelos especializados</h3>
+          <p class="feature-card__desc">
+            Un módulo para citología cervical y otro para análisis de heterogeneidad
+            tumoral por MRI, entrenados sobre datasets clínicos reales y validados.
+          </p>
+        </div>
+
+        <div class="card feature-card fade-in">
+          <div class="feature-card__icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <h3 class="feature-card__title">Informe estructurado</h3>
+          <p class="feature-card__desc">
+            Cada análisis produce un nivel de riesgo, un índice de confianza
+            y recomendaciones clínicas que el médico puede revisar, editar
+            y adjuntar al expediente del paciente.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================================
+       SECCIÓN 4: CÓMO FUNCIONA — LOS DOS MÓDULOS
+  ==================================================================== -->
+  <section class="section" id="modulos" aria-labelledby="modulos-title">
+    <div class="container">
+
+      <div class="section__header fade-in">
+        <span class="section-tag">Cómo funciona</span>
+        <h2 class="section__title" id="modulos-title">
+          Dos módulos complementarios para una visión completa
+        </h2>
+        <p class="section__desc">
+          VARIME no depende de un solo análisis. Combina dos fuentes de información
+          distintas —la célula individual y el tumor como unidad— para ofrecer
+          una evaluación más robusta al profesional.
+        </p>
+      </div>
+
+      <div class="modulos__grid">
+
+        <!-- ── MÓDULO 1: Citología ── -->
+        <article class="card modulo-card fade-in" aria-labelledby="modulo1-title">
+          <div class="modulo-card__header">
+            <div class="modulo-card__number" aria-label="Módulo 1">1</div>
+            <h3 class="modulo-card__title" id="modulo1-title">
+              Clasificación citológica
+            </h3>
+            <p class="modulo-card__subtitle">Análisis de células cervicales individuales</p>
+          </div>
+
+          <div class="modulo-card__body">
+            <div class="modulo-steps" role="list">
+
+              <div class="modulo-step" role="listitem">
+                <div class="modulo-step__icon" aria-hidden="true">
+                  <!-- Upload icon -->
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="16 16 12 12 8 16"/>
+                    <line x1="12" y1="12" x2="12" y2="21"/>
+                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="modulo-step__label">Entrada</div>
+                  <p class="modulo-step__text">
+                    Imagen de frotis de Papanicolaou (PNG / BMP).
+                    La toma se realiza con el procedimiento de citología convencional.
+                  </p>
+                </div>
+              </div>
+
+              <div class="modulo-step" role="listitem">
+                <div class="modulo-step__icon" aria-hidden="true">
+                  <!-- Search icon -->
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="modulo-step__label">Análisis</div>
+                  <p class="modulo-step__text">
+                    El modelo Vision Transformer (ViT) divide la imagen en parches,
+                    atiende relaciones entre células y clasifica cada muestra
+                    en <strong>cinco categorías</strong> clínicas — desde células
+                    normales hasta células con alto grado de displasia.
+                    <em>La IA mira cada célula como lo haría un citólogo especialista, pero en segundos.</em>
+                  </p>
+                </div>
+              </div>
+
+              <div class="modulo-step" role="listitem">
+                <div class="modulo-step__icon" aria-hidden="true">
+                  <!-- BarChart icon -->
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6"  y1="20" x2="6"  y2="14"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="modulo-step__label">¿Por qué importa?</div>
+                  <p class="modulo-step__text">
+                    Detectar displasia leve o moderada es la ventana de oportunidad
+                    para tratamientos ambulatorios no invasivos. Una clasificación
+                    rápida y orientativa permite al médico priorizar los casos
+                    que requieren confirmación urgente.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Resultado -->
+            <div class="modulo-result" role="note" aria-label="Resultado del módulo 1">
+              <div class="modulo-result__label">Resultado entregado</div>
+              <p class="modulo-result__text">
+                Categoría celular (normal / metaplasia / displasia leve / displasia moderada / displasia severa)
+                con nivel de confianza y zonas de interés destacadas.
+              </p>
+            </div>
+
+            <!-- Dataset badge -->
+            <div class="dataset-badge" aria-label="Dataset utilizado">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" aria-hidden="true">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+              </svg>
+              Dataset: SIPaKMeD (células pap — 5 clases)
+            </div>
+
+          </div>
+        </article>
+
+        <!-- ── MÓDULO 2: Heterogeneidad tumoral ── -->
+        <article class="card modulo-card fade-in" aria-labelledby="modulo2-title">
+          <div class="modulo-card__header">
+            <div class="modulo-card__number" aria-label="Módulo 2">2</div>
+            <h3 class="modulo-card__title" id="modulo2-title">
+              Heterogeneidad tumoral por MRI
+            </h3>
+            <p class="modulo-card__subtitle">Análisis de variabilidad interna del tumor</p>
+          </div>
+
+          <div class="modulo-card__body">
+            <div class="modulo-steps" role="list">
+
+              <div class="modulo-step" role="listitem">
+                <div class="modulo-step__icon" aria-hidden="true">
+                  <!-- Monitor icon -->
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="modulo-step__label">Entrada</div>
+                  <p class="modulo-step__text">
+                    Imagen de resonancia magnética pélvica (MRI).
+                    No requiere contraste adicional sobre el estudio estándar.
+                  </p>
+                </div>
+              </div>
+
+              <div class="modulo-step" role="listitem">
+                <div class="modulo-step__icon" aria-hidden="true">
+                  <!-- Layers icon -->
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                    <polyline points="2 17 12 22 22 17"/>
+                    <polyline points="2 12 12 17 22 12"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="modulo-step__label">Análisis</div>
+                  <p class="modulo-step__text">
+                    Un segundo modelo ViT evalúa la <strong>heterogeneidad
+                    intra-tumoral</strong>: qué tan uniforme o variable es
+                    la composición celular dentro del tumor.
+                    <em>Conocer la variabilidad interna del tumor ayuda a planear mejor el tratamiento.</em>
+                  </p>
+                </div>
+              </div>
+
+              <div class="modulo-step" role="listitem">
+                <div class="modulo-step__icon" aria-hidden="true">
+                  <!-- Target icon -->
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6"/>
+                    <circle cx="12" cy="12" r="2"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="modulo-step__label">¿Por qué importa?</div>
+                  <p class="modulo-step__text">
+                    Tumores con alta heterogeneidad responden de forma diferente
+                    a la quimioterapia y la radioterapia. Cuantificar este
+                    parámetro desde el inicio guía al oncólogo en la selección
+                    del protocolo más adecuado para cada paciente.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Resultado -->
+            <div class="modulo-result" role="note" aria-label="Resultado del módulo 2">
+              <div class="modulo-result__label">Resultado entregado</div>
+              <p class="modulo-result__text">
+                Clasificación de heterogeneidad (baja / media / alta) con índice de confianza,
+                regiones de interés y recomendaciones clínicas orientativas.
+              </p>
+            </div>
+
+            <!-- Dataset badge -->
+            <div class="dataset-badge" aria-label="Dataset utilizado">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" aria-hidden="true">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+              </svg>
+              Dataset: TCIA CC-Tumor-Heterogeneity (MRI cervical)
+            </div>
+
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================================
+       SECCIÓN 5: POR QUÉ VISION TRANSFORMERS
+  ==================================================================== -->
+  <section class="section section--alt" id="vit" aria-labelledby="vit-title">
+    <div class="container">
+
+      <div class="vit__grid">
+
+        <!-- Texto explicativo -->
+        <div class="vit__text fade-in">
+          <span class="section-tag">Arquitectura</span>
+          <h2 class="section__title" id="vit-title" style="text-align:left; max-width:none; margin-bottom:0">
+            Por qué Vision Transformers
+          </h2>
+          <div class="divider"></div>
+          <p>
+            Las redes neuronales convolucionales (CNN) tradicionales analizan
+            una imagen fragmento por fragmento, combinando gradualmente los
+            patrones locales para inferir el todo. Son poderosas, pero limitadas
+            para capturar relaciones entre regiones distantes en la imagen.
+          </p>
+          <p>
+            Los <strong>Vision Transformers (ViT)</strong> aplican el mecanismo
+            de atención —originalmente diseñado para texto— a imágenes médicas.
+            Dividen la imagen en parches y calculan simultáneamente cómo se
+            relaciona cada parche con todos los demás.
+            <strong>Ven la imagen como un todo desde el primer momento.</strong>
+          </p>
+
+          <div class="vit__advantages" role="list">
+            <div class="vit__advantage" role="listitem">Captura relaciones globales y locales en paralelo</div>
+            <div class="vit__advantage" role="listitem">Mayor robustez ante variaciones de tinción y calidad</div>
+            <div class="vit__advantage" role="listitem">Escalable a imágenes de alta resolución</div>
+            <div class="vit__advantage" role="listitem">Atención interpretable: se puede visualizar qué zonas "miró" el modelo</div>
+          </div>
+        </div>
+
+        <!-- Comparación visual CNN vs ViT -->
+        <div class="vit__comparison fade-in" role="list">
+
+          <div class="card compare-card compare-card--cnn" role="listitem">
+            <div class="compare-card__icon" aria-label="Red convolucional">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="compare-card__title">CNN tradicional</h3>
+              <p class="compare-card__desc">
+                Analiza fragmento por fragmento. Integra gradualmente la información
+                local en capas sucesivas. Puede perder relaciones de largo alcance
+                relevantes para el diagnóstico cervical.
+              </p>
+            </div>
+          </div>
+
+          <div class="card compare-card compare-card--vit" role="listitem">
+            <div class="compare-card__icon" aria-label="Vision Transformer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+                <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="compare-card__title">Vision Transformer (ViT)</h3>
+              <p class="compare-card__desc">
+                Analiza la imagen como un conjunto de parches relacionados.
+                El mecanismo de atención conecta cualquier parche con cualquier otro
+                desde la primera capa, capturando contexto global inmediato.
+              </p>
+            </div>
+          </div>
+
+          <!-- Analogía accesible -->
+          <div class="card fade-in" style="padding:1.5rem; background:var(--color-primary-light); border:1px solid hsl(332,50%,88%); border-radius:var(--radius-xl)">
+            <p style="font-size:0.875rem; color:var(--color-text); line-height:1.6;">
+              <strong>Analogía:</strong> mientras una red convolucional lee la imagen
+              como si descubriera una ciudad bloque por bloque, el ViT la ve como
+              un mapa completo desde el primer momento y decide qué zonas merecen
+              más atención.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================================
+       SECCIÓN 6: METODOLOGÍA
+  ==================================================================== -->
+  <section class="section" id="metodologia" aria-labelledby="metodologia-title">
+    <div class="container">
+
+      <div class="section__header fade-in">
+        <span class="section-tag">Rigor académico e ingenieril</span>
+        <h2 class="section__title" id="metodologia-title">
+          Un proyecto construido con metodología
+        </h2>
+        <p class="section__desc">
+          VARIME no es un prototipo improvisado. Su desarrollo siguió marcos
+          de trabajo establecidos en ingeniería de Machine Learning y arquitectura
+          de software, garantizando trazabilidad, calidad y replicabilidad.
+        </p>
+      </div>
+
+      <div class="metodologia__grid">
+
+        <!-- CRISP-ML(Q) -->
+        <div class="card metodologia-card fade-in">
+          <div class="metodologia-card__tag">Proceso ML</div>
+          <h3 class="metodologia-card__name">CRISP-ML(Q)</h3>
+          <p class="metodologia-card__desc">
+            <em>Cross-Industry Standard Process for Machine Learning with Quality Assurance.</em>
+            Organiza el ciclo de vida del modelo en fases iterativas —comprensión del negocio,
+            preparación de datos, modelado, evaluación, despliegue y monitoreo— con criterios
+            de calidad explícitos en cada etapa. Garantiza que el sistema haya sido
+            validado antes de usarse en contexto médico.
+          </p>
+          <div class="metodologia-steps">
+            <span class="metodologia-step-pill">Comprensión del negocio</span>
+            <span class="metodologia-step-pill">Preparación de datos</span>
+            <span class="metodologia-step-pill">Modelado</span>
+            <span class="metodologia-step-pill">Evaluación</span>
+            <span class="metodologia-step-pill">Despliegue</span>
+            <span class="metodologia-step-pill">Monitoreo</span>
+          </div>
+        </div>
+
+        <!-- Modelo 4+1 -->
+        <div class="card metodologia-card fade-in">
+          <div class="metodologia-card__tag">Arquitectura de software</div>
+          <h3 class="metodologia-card__name">Modelo de Vistas 4+1</h3>
+          <p class="metodologia-card__desc">
+            El diseño arquitectónico del sistema —frontend, backend, base de datos,
+            modelos de IA y despliegue en contenedores— fue documentado usando el
+            Modelo de Vistas 4+1 de Kruchten. Cada vista (lógica, proceso, desarrollo,
+            física y escenarios) asegura que cualquier stakeholder pueda comprender
+            el sistema desde su perspectiva relevante.
+          </p>
+          <div class="metodologia-steps">
+            <span class="metodologia-step-pill">Vista lógica</span>
+            <span class="metodologia-step-pill">Vista de proceso</span>
+            <span class="metodologia-step-pill">Vista de desarrollo</span>
+            <span class="metodologia-step-pill">Vista física</span>
+            <span class="metodologia-step-pill">Escenarios (+1)</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Stack tecnológico como tarjetas pequeñas -->
+      <div class="fade-in" style="margin-top:2.5rem;">
+        <p style="font-size:0.8125rem; font-weight:600; text-transform:uppercase;
+                  letter-spacing:0.08em; color:var(--color-muted); margin-bottom:1rem;">
+          Stack tecnológico
+        </p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.625rem;">
+          <!-- Cada tecnología como pill -->
+          <span style="background:var(--color-primary-light); color:var(--color-primary);
+                       padding:0.375rem 0.875rem; border-radius:var(--radius-pill);
+                       font-size:0.8125rem; font-weight:600;">Python / FastAPI</span>
+          <span style="background:var(--color-primary-light); color:var(--color-primary);
+                       padding:0.375rem 0.875rem; border-radius:var(--radius-pill);
+                       font-size:0.8125rem; font-weight:600;">TensorFlow / Keras</span>
+          <span style="background:var(--color-primary-light); color:var(--color-primary);
+                       padding:0.375rem 0.875rem; border-radius:var(--radius-pill);
+                       font-size:0.8125rem; font-weight:600;">Vision Transformer (ViT)</span>
+          <span style="background:var(--color-primary-light); color:var(--color-primary);
+                       padding:0.375rem 0.875rem; border-radius:var(--radius-pill);
+                       font-size:0.8125rem; font-weight:600;">React + TypeScript</span>
+          <span style="background:var(--color-primary-light); color:var(--color-primary);
+                       padding:0.375rem 0.875rem; border-radius:var(--radius-pill);
+                       font-size:0.8125rem; font-weight:600;">PostgreSQL</span>
+          <span style="background:var(--color-primary-light); color:var(--color-primary);
+                       padding:0.375rem 0.875rem; border-radius:var(--radius-pill);
+                       font-size:0.8125rem; font-weight:600;">Docker Compose</span>
+          <span style="background:var(--color-primary-light); color:var(--color-primary);
+                       padding:0.375rem 0.875rem; border-radius:var(--radius-pill);
+                       font-size:0.8125rem; font-weight:600;">SIPaKMeD Dataset</span>
+          <span style="background:var(--color-primary-light); color:var(--color-primary);
+                       padding:0.375rem 0.875rem; border-radius:var(--radius-pill);
+                       font-size:0.8125rem; font-weight:600;">TCIA CC-Tumor-Heterogeneity</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ===================================================================
+       SECCIÓN 7: CONTEXTO ACADÉMICO
+  ==================================================================== -->
+  <section class="section academia" id="academia" aria-labelledby="academia-title">
+    <div class="container" style="position:relative; z-index:1">
+
+      <div class="section__header fade-in">
+        <span class="section-tag">Contexto académico</span>
+        <h2 class="section__title" id="academia-title">
+          Un proyecto de investigación aplicada
+        </h2>
+        <p class="section__desc">
+          VARIME nació en el laboratorio de investigación de la Facultad de Ingeniería
+          como respuesta a una necesidad real del sistema de salud colombiano.
+        </p>
+      </div>
+
+      <div class="academia__grid">
+
+        <div class="academia-card fade-in">
+          <div class="academia-card__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+          </div>
+          <div class="academia-card__label">Institución</div>
+          <div class="academia-card__value">
+            Universidad de San Buenaventura, Cali<br>
+            <span style="font-size:0.875rem; color:rgba(255,255,255,0.6); font-weight:400;">
+              Facultad de Ingeniería — Ingeniería de Sistemas
+            </span>
+          </div>
+        </div>
+
+        <div class="academia-card fade-in">
+          <div class="academia-card__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="academia-card__label">Director de tesis</div>
+          <div class="academia-card__value">
+            Carlos Giovanny Hidalgo Suárez, PhD<br>
+            <span style="font-size:0.875rem; color:rgba(255,255,255,0.6); font-weight:400;">
+              Docente investigador
+            </span>
+          </div>
+        </div>
+
+        <div class="academia-card fade-in">
+          <div class="academia-card__icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div class="academia-card__label">Año</div>
+          <div class="academia-card__value">
+            2025<br>
+            <span style="font-size:0.875rem; color:rgba(255,255,255,0.6); font-weight:400;">
+              Tesis de pregrado en curso
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Logo placeholder USB -->
+      <div class="usb-logo fade-in" role="img"
+           aria-label="Logo Universidad de San Buenaventura Cali — placeholder">
+        <div class="usb-logo__icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <div>
+          <div class="usb-logo__text">Universidad de San Buenaventura</div>
+          <div class="usb-logo__sub">Cali, Colombia — Logo institucional (placeholder)</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ===================================================================
+       SECCIÓN 8: FOOTER
+  ==================================================================== -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+
+      <div class="footer__top">
+
+        <!-- Columna 1: logo + disclaimer -->
+        <div>
+          <div class="footer__logo" aria-label="VARIME">
+            <div class="footer__logo-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+                <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+              </svg>
+            </div>
+            VARIME
+          </div>
+          <p class="footer__tagline">
+            Sistema de inteligencia artificial para detección temprana de cáncer cervical.
+            Desarrollo académico — Universidad de San Buenaventura, Cali.
+          </p>
+          <!-- Aviso de uso responsable -->
+          <div class="footer__disclaimer" role="note">
+            <strong style="color:rgba(255,255,255,0.7);">Uso responsable:</strong>
+            VARIME es una herramienta de apoyo al diagnóstico. No reemplaza
+            el criterio clínico del profesional de salud ni constituye por sí sola
+            un diagnóstico médico definitivo.
+          </div>
+        </div>
+
+        <!-- Columna 2: links del proyecto -->
+        <div>
+          <h3 class="footer__section-title">Proyecto</h3>
+          <ul class="footer__links">
+            <li>
+              <a href="#" aria-label="Repositorio GitHub (próximamente)">
+                <!-- GitHub icon inline -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                </svg>
+                Repositorio GitHub
+                <span style="font-size:0.6875rem; color:rgba(255,255,255,0.3)">(próximamente)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" aria-label="Documento de tesis (próximamente)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Documento de tesis
+                <span style="font-size:0.6875rem; color:rgba(255,255,255,0.3)">(próximamente)</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" aria-label="Contacto">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                Contacto
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Columna 3: links externos -->
+        <div>
+          <h3 class="footer__section-title">Referencias</h3>
+          <ul class="footer__links">
+            <li>
+              <a href="https://www.cancer.gov.co" target="_blank" rel="noopener noreferrer"
+                 aria-label="Instituto Nacional de Cancerología (abre en nueva pestaña)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                INC Colombia
+              </a>
+            </li>
+            <li>
+              <a href="https://gco.iarc.fr" target="_blank" rel="noopener noreferrer"
+                 aria-label="Globocan IARC (abre en nueva pestaña)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Globocan / IARC
+              </a>
+            </li>
+            <li>
+              <a href="https://www.who.int/es/news-room/fact-sheets/detail/cervical-cancer"
+                 target="_blank" rel="noopener noreferrer"
+                 aria-label="OMS - Cáncer cervical (abre en nueva pestaña)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                OMS — Cáncer cervical
+              </a>
+            </li>
+            <li>
+              <a href="https://www.usbcali.edu.co" target="_blank" rel="noopener noreferrer"
+                 aria-label="Universidad de San Buenaventura Cali (abre en nueva pestaña)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                USB Cali
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="footer__bottom">
+        <span>© 2025 VARIME — Universidad de San Buenaventura, Cali. Proyecto académico.</span>
+        <span>Desarrollado con ❤ para la salud pública colombiana</span>
+      </div>
+
+    </div>
+  </footer>
+
+
+  <!-- ===================================================================
+       JAVASCRIPT
+       1. Animaciones de entrada por scroll (IntersectionObserver)
+       2. Punto de pulso en el badge del hero
+  ==================================================================== -->
+  <script>
+    /* Animación pulsante para el punto verde del hero badge */
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.6; transform: scale(1.3); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    /* IntersectionObserver — activa .visible cuando el elemento entra en viewport */
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            /* No observar más una vez que ya es visible (animación one-shot) */
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.12,     /* Se activa cuando el 12% del elemento es visible */
+        rootMargin: '0px 0px -40px 0px' /* Margen inferior para activar un poco antes del borde */
+      }
+    );
+
+    /* Registrar todos los elementos con la clase fade-in */
+    document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
+
+    /* Activar inmediatamente los elementos del hero (ya están en viewport al cargar) */
+    document.querySelectorAll('.hero .fade-in').forEach((el) => {
+      setTimeout(() => el.classList.add('visible'), 100);
+    });
+
+    /* Menú móvil — toggle simple de visibilidad del dropdown */
+    const menuBtn = document.getElementById('menuBtn');
+    if (menuBtn) {
+      menuBtn.addEventListener('click', () => {
+        /* Crear dropdown si no existe */
+        let dropdown = document.getElementById('mobileMenu');
+        if (!dropdown) {
+          dropdown = document.createElement('div');
+          dropdown.id = 'mobileMenu';
+          dropdown.setAttribute('role', 'menu');
+          dropdown.style.cssText = `
+            position: fixed; top: 64px; left: 0; right: 0; z-index: 99;
+            background: white; border-bottom: 1px solid hsl(332,20%,92%);
+            padding: 1rem 1.5rem; display: flex; flex-direction: column;
+            gap: 0.25rem; box-shadow: 0 4px 24px -4px rgba(0,0,0,0.12);
+          `;
+          const links = [
+            ['#problema',    'El problema'],
+            ['#que-es',      'Qué es VARIME'],
+            ['#modulos',     'Cómo funciona'],
+            ['#metodologia', 'Metodología'],
+            ['#academia',    'Proyecto'],
+          ];
+          links.forEach(([href, label]) => {
+            const a = document.createElement('a');
+            a.href = href;
+            a.textContent = label;
+            a.setAttribute('role', 'menuitem');
+            a.style.cssText = `
+              display: block; padding: 0.75rem 0.875rem; border-radius: 0.75rem;
+              color: hsl(332,18%,20%); font-size: 0.9375rem; font-weight: 500;
+              transition: background 0.2s;
+            `;
+            a.addEventListener('mouseenter', () => a.style.background = 'hsl(332,100%,95%)');
+            a.addEventListener('mouseleave', () => a.style.background = 'transparent');
+            a.addEventListener('click', () => dropdown.remove());
+            dropdown.appendChild(a);
+          });
+          document.body.appendChild(dropdown);
+          menuBtn.setAttribute('aria-expanded', 'true');
+        } else {
+          dropdown.remove();
+          menuBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    /* Cerrar menú móvil al hacer scroll */
+    window.addEventListener('scroll', () => {
+      const dropdown = document.getElementById('mobileMenu');
+      if (dropdown) {
+        dropdown.remove();
+        menuBtn && menuBtn.setAttribute('aria-expanded', 'false');
+      }
+    }, { passive: true });
+  </script>
+
+</body>
+</html>
