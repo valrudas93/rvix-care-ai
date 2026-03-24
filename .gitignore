@@ -30,7 +30,7 @@ backend/.env
 !backend/.env.example
 
 # ─── Modelos IA (archivos grandes — distribuir por separado) ─────────────────
-*.keras
+#*.keras
 *.h5
 *.pt
 *.pth

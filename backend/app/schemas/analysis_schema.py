@@ -47,3 +47,6 @@ class HistoryItem(BaseModel):
     risk_level: str
     confidence: float
     date: str
+    detected_regions: list[str] = []
+    recommendations: list[str] = []
+    medical_explanation: str | None = None

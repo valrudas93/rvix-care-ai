@@ -26,7 +26,8 @@ logger = logging.getLogger(__name__)
 CLASS_NAMES_CITOLOGIA = ["normal", "anormal"]
 
 # Resonancia model (tcia heterogeneidad): three risk levels
-CLASS_NAMES_RESONANCIA = ["bajo_riesgo", "medio_riesgo", "alto_riesgo"]
+# Order matches Keras flow_from_directory alphabetical sort: Alta(0) → Baja(1) → Media(2)
+CLASS_NAMES_RESONANCIA = ["alto_riesgo", "bajo_riesgo", "medio_riesgo"]
 
 # Map citología raw labels → unified risk vocabulary used by the rest of the system
 _CITOLOGIA_TO_RISK = {

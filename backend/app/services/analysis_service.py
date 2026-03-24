@@ -245,9 +245,8 @@ async def create_job(
             .filter(Patient.id == patient_id, Patient.doctor_id == doctor_id)
             .first()
         )
-        if not patient:
-            raise NotFoundError("Paciente")
-        selected_patient_id = patient.id
+        # Fall back to auto-patient if the stored ID no longer exists
+        selected_patient_id = patient.id if patient else _get_or_create_auto_patient(db, doctor_id)
 
     study_ids: list[int] = []
 
@@ -370,6 +369,9 @@ def get_doctor_history(doctor_id: int, db: Session) -> list[HistoryItem]:
             risk_level=_risk(prediction.prediction),
             confidence=round(prediction.confidence * 100, 2),
             date=prediction.fecha_prediccion.isoformat(),
+            detected_regions=prediction.detected_regions or [],
+            recommendations=prediction.recommendations or [],
+            medical_explanation=prediction.medical_explanation,
         )
         for prediction, patient, study in rows
     ]

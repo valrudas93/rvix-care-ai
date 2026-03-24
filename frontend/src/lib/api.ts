@@ -38,6 +38,9 @@ export interface HistoryItem {
   risk_level: 'bajo' | 'medio' | 'alto' | string;
   confidence: number;
   date: string;
+  detected_regions: string[];
+  recommendations: string[];
+  medical_explanation: string | null;
 }
 
 function getAuthToken(): string | null {
@@ -46,12 +49,23 @@ function getAuthToken(): string | null {
 
 function buildAuthHeaders(): HeadersInit {
   const token = getAuthToken();
-  if (!token) {
-    return {};
-  }
-  return {
-    Authorization: `Bearer ${token}`,
-  };
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
+
+function handleUnauthorized(): never {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('isAuthenticated');
+  localStorage.removeItem('doctorName');
+  localStorage.removeItem('activePatientId');
+  window.location.href = '/login';
+  throw new Error('Sesión expirada. Por favor inicia sesión nuevamente.');
+}
+
+async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
+  const res = await fetch(input, init);
+  if (res.status === 401) handleUnauthorized();
+  return res;
 }
 
 export interface RegisterRequest {
@@ -94,27 +108,20 @@ export async function login(email: string, password: string): Promise<LoginRespo
 }
 
 export async function listPatients(): Promise<PatientResponse[]> {
-  const response = await fetch(`${API_BASE_URL}/patients`, {
+  const response = await apiFetch(`${API_BASE_URL}/patients`, {
     headers: buildAuthHeaders(),
   });
-  if (!response.ok) {
-    throw new Error('No se pudo obtener la lista de pacientes');
-  }
+  if (!response.ok) throw new Error('No se pudo obtener la lista de pacientes');
   return response.json();
 }
 
 export async function createPatient(data: PatientCreateRequest): Promise<PatientResponse> {
-  const response = await fetch(`${API_BASE_URL}/patients`, {
+  const response = await apiFetch(`${API_BASE_URL}/patients`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...buildAuthHeaders(),
-    },
+    headers: { 'Content-Type': 'application/json', ...buildAuthHeaders() },
     body: JSON.stringify(data),
   });
-  if (!response.ok) {
-    throw new Error('No se pudo crear el paciente');
-  }
+  if (!response.ok) throw new Error('No se pudo crear el paciente');
   return response.json();
 }
 
@@ -127,15 +134,12 @@ export async function explainPrediction(
   model2Findings?: string,
   clinicalData?: Record<string, unknown>,
 ): Promise<string> {
-  const response = await fetch(`${API_BASE_URL}/llm/explain-prediction`, {
+  const response = await apiFetch(`${API_BASE_URL}/llm/explain-prediction`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...buildAuthHeaders(),
-    },
+    headers: { 'Content-Type': 'application/json', ...buildAuthHeaders() },
     body: JSON.stringify({
       prediction,
-      confidence: confidence / 100, // backend expects 0-1
+      confidence: confidence / 100,
       detected_regions: detectedRegions ?? null,
       recommendations: recommendations ?? null,
       model1_findings: model1Findings ?? null,
@@ -143,20 +147,16 @@ export async function explainPrediction(
       clinical_data: clinicalData ?? null,
     }),
   });
-  if (!response.ok) {
-    throw new Error('No se pudo generar la explicación médica');
-  }
+  if (!response.ok) throw new Error('No se pudo generar la explicación médica');
   const data = await response.json();
   return data.medical_explanation as string;
 }
 
 export async function getAnalysisHistory(): Promise<HistoryItem[]> {
-  const response = await fetch(`${API_BASE_URL}/api/history`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/history`, {
     headers: buildAuthHeaders(),
   });
-  if (!response.ok) {
-    throw new Error('No se pudo obtener el historial');
-  }
+  if (!response.ok) throw new Error('No se pudo obtener el historial');
   return response.json();
 }
 
@@ -271,14 +271,10 @@ export async function uploadImagesForAnalysis(
  * @returns Promise with job status
  */
 export async function getJobStatus(jobId: string): Promise<JobStatus> {
-  const response = await fetch(`${API_BASE_URL}/api/status/${jobId}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/status/${jobId}`, {
     headers: buildAuthHeaders(),
   });
-
-  if (!response.ok) {
-    throw new Error(`Failed to get job status: ${response.statusText}`);
-  }
-
+  if (!response.ok) throw new Error(`Failed to get job status: ${response.statusText}`);
   return response.json();
 }
 
@@ -288,14 +284,10 @@ export async function getJobStatus(jobId: string): Promise<JobStatus> {
  * @returns Promise with job result
  */
 export async function getJobResult(jobId: string): Promise<JobResult> {
-  const response = await fetch(`${API_BASE_URL}/api/results/${jobId}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/results/${jobId}`, {
     headers: buildAuthHeaders(),
   });
-
-  if (!response.ok) {
-    throw new Error(`Failed to get job results: ${response.statusText}`);
-  }
-
+  if (!response.ok) throw new Error(`Failed to get job results: ${response.statusText}`);
   return response.json();
 }
 

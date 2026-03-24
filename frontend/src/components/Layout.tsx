@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, FileText, ImageIcon, Activity, History, LogOut, Brain, Menu } from "lucide-react";
+import { Home, FileText, Activity, History, LogOut, Brain, Menu } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -32,9 +32,8 @@ const Layout = ({ children }: LayoutProps) => {
 
   const menuItems = [
     { title: "Panel Principal", icon: Home, path: "/dashboard" },
-    { title: "Datos Clínicos", icon: FileText, path: "/clinical-data" },
-    { title: "Cargar Imágenes", icon: ImageIcon, path: "/upload-images" },
-    { title: "Resultados", icon: Activity, path: "/results" },
+    { title: "Registrar Paciente", icon: FileText, path: "/clinical-data" },
+    { title: "Detección de Cáncer", icon: Activity, path: "/upload-images" },
     { title: "Historial", icon: History, path: "/history" },
   ];
 

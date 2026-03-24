@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Activity, FileText, ImageIcon, TrendingUp, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { Activity, FileText, TrendingUp, AlertCircle, CheckCircle2, Clock, Microscope } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,11 +29,21 @@ const Dashboard = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Panel Principal</h1>
-        <p className="text-muted-foreground">
-          Bienvenida al sistema de detección temprana de cáncer cervical
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Panel Principal</h1>
+          <p className="text-muted-foreground">
+            Bienvenida al sistema de detección temprana de cáncer cervical
+          </p>
+        </div>
+        <Button
+          size="lg"
+          className="gradient-medical shadow-medical hover:opacity-90 gap-2 whitespace-nowrap"
+          onClick={() => navigate("/upload-images")}
+        >
+          <Microscope className="h-5 w-5" />
+          Realizar Detección
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -84,7 +94,7 @@ const Dashboard = () => {
                 <FileText className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-base">Datos Clínicos</CardTitle>
+                <CardTitle className="text-base">Registrar Paciente</CardTitle>
                 <CardDescription>Ingresar información del paciente</CardDescription>
               </div>
             </div>
@@ -103,17 +113,17 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary-light">
-                <ImageIcon className="h-5 w-5 text-primary" />
+                <Microscope className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-base">Subir Imágenes</CardTitle>
+                <CardTitle className="text-base">Realizar Detección</CardTitle>
                 <CardDescription>Citología y resonancia magnética</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <Button variant="outline" className="w-full">
-              Cargar Archivos
+              Iniciar Análisis
             </Button>
           </CardContent>
         </Card>
