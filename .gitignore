@@ -29,6 +29,14 @@ backend/.env
 !.env.example
 !backend/.env.example
 
+# ─── Modelos IA (archivos grandes — distribuir por separado) ─────────────────
+*.keras
+*.h5
+*.pt
+*.pth
+*.onnx
+*.pkl
+
 # ─── Uploads / user data ─────────────────────────────────────────────────────
 backend/uploads/
 !backend/uploads/.gitkeep
