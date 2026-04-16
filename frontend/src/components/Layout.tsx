@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, FileText, Activity, History, LogOut, Brain, Menu } from "lucide-react";
+import { Home, FileText, Activity, History, LogOut, Menu } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -42,9 +42,7 @@ const Layout = ({ children }: LayoutProps) => {
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg gradient-medical shadow-medical">
-            <Brain className="h-6 w-6 text-white" />
-          </div>
+          <img src="/logo.svg" alt="VARIME" className="h-10 w-10 drop-shadow-md" />
           <div>
             <h2 className="font-bold text-lg">VARIME</h2>
             <p className="text-xs text-muted-foreground">Sistema de Diagnóstico</p>
@@ -91,9 +89,7 @@ const Layout = ({ children }: LayoutProps) => {
       {/* Mobile Header */}
       <div className="lg:hidden border-b border-border bg-card p-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg gradient-medical">
-            <Brain className="h-5 w-5 text-white" />
-          </div>
+          <img src="/logo.svg" alt="VARIME" className="h-8 w-8" />
           <span className="font-bold">VARIME</span>
         </div>
         <Sheet open={open} onOpenChange={setOpen}>

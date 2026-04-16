@@ -15,6 +15,7 @@ class AnalysisResult(BaseModel):
     recommendations: list[str]
     model1: AnalysisModelSummary
     model2: AnalysisModelSummary
+    medical_explanation: str | None = None
 
 
 class AnalyzeResponse(BaseModel):

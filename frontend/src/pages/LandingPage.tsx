@@ -757,6 +757,44 @@ const LandingPage = () => {
             </p>
           </div>
 
+          {/* Tarjeta destacada — Autora */}
+          <div className="fi mb-6">
+            <div
+              className="rounded-2xl p-7 flex flex-col sm:flex-row items-center sm:items-start gap-6"
+              style={{
+                background: "linear-gradient(135deg, rgba(124,58,237,0.25) 0%, rgba(67,56,202,0.2) 100%)",
+                border: "1px solid rgba(167,139,250,0.35)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              {/* Avatar inicial */}
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl font-extrabold text-white shadow-medical"
+                style={S.gradientBtn}
+                aria-hidden="true"
+              >
+                VR
+              </div>
+              <div className="text-center sm:text-left">
+                <div
+                  className="text-[0.65rem] font-bold uppercase tracking-widest mb-1.5"
+                  style={{ color: "hsl(332,80%,72%)" }}
+                >
+                  Autora — Trabajo de Grado
+                </div>
+                <div className="text-xl font-extrabold text-white mb-1">Valeria Rudas Ruiz</div>
+                <div className="text-sm text-white/60">
+                  Estudiante de Ingeniería de Sistemas · Universidad de San Buenaventura, Cali
+                </div>
+                <div className="mt-3 text-sm text-white/50 leading-relaxed max-w-xl">
+                  Este proyecto es el resultado de su trabajo de grado, enfocado en el desarrollo
+                  de un sistema de inteligencia artificial para el apoyo al diagnóstico temprano
+                  del cáncer de cuello uterino en el contexto del sistema de salud colombiano.
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-5 mb-10">
             {[
               {

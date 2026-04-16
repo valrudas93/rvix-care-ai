@@ -16,6 +16,7 @@ from app.models.patient import Patient
 from app.schemas.analysis_schema import AnalysisResult, AnalysisModelSummary, HistoryItem, JobStep
 from app.services import prediction_service, study_service
 from app.utils.exceptions import BadRequestError, NotFoundError
+from app.ai_models.llm.llm_interface import generate_medical_explanation
 
 JobStatusValue = Literal["queued", "processing", "completed", "error"]
 
@@ -310,6 +311,28 @@ def process_job(job_id: str) -> None:
 
         _set_status(job_id, "processing", 90, step_index=3)
         result = _build_result(predictions)
+
+        # Generate LLM explanation and persist to each prediction record
+        try:
+            explanation = generate_medical_explanation(
+                prediction=result.riskLevel + "_riesgo",
+                confidence=result.confidence / 100,
+                detected_regions=result.detectedRegions,
+                recommendations=result.recommendations,
+                model1_findings=result.model1.findings,
+                model2_findings=result.model2.findings,
+            )
+            result.medical_explanation = explanation
+
+            # Save to DB predictions
+            for pred_out in predictions:
+                pred_row = db.get(Prediction, pred_out.id)
+                if pred_row:
+                    pred_row.medical_explanation = explanation
+            db.commit()
+        except Exception as llm_exc:
+            logger.warning("LLM explanation failed (non-fatal): %s", llm_exc)
+
         _set_result(job_id, result)
     except Exception as exc:
         _set_error(job_id, str(exc))

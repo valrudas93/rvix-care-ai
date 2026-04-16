@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,69 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle, CheckCircle2, Download, FileText, ArrowLeft, Brain, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { explainPrediction } from "@/lib/api";
+import { MedicalMarkdown } from "@/components/MedicalMarkdown";
 
-/** Renders the structured markdown Claude returns into styled JSX without extra libs. */
-function MedicalMarkdown({ text }: { text: string }) {
-  const lines = text.split("\n");
-  const elements: React.ReactNode[] = [];
-  let listItems: string[] = [];
-  let key = 0;
-
-  const flushList = () => {
-    if (listItems.length > 0) {
-      elements.push(
-        <ul key={key++} className="space-y-1.5 my-3 ml-4">
-          {listItems.map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
-              <span dangerouslySetInnerHTML={{ __html: inlineFormat(item) }} />
-            </li>
-          ))}
-        </ul>
-      );
-      listItems = [];
-    }
-  };
-
-  const inlineFormat = (s: string) =>
-    s
-      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.+?)\*/g, "<em>$1</em>")
-      .replace(/`(.+?)`/g, '<code class="bg-muted px-1 rounded text-xs">$1</code>');
-
-  for (const raw of lines) {
-    const line = raw.trim();
-
-    if (line.startsWith("## ")) {
-      flushList();
-      elements.push(
-        <h3 key={key++} className="font-semibold text-base text-foreground mt-5 mb-2 flex items-center gap-2">
-          <span className="inline-block w-1 h-4 rounded bg-primary" />
-          {line.slice(3)}
-        </h3>
-      );
-    } else if (line.startsWith("- ") || line.startsWith("* ")) {
-      listItems.push(line.slice(2));
-    } else if (line.startsWith("---")) {
-      flushList();
-      elements.push(<hr key={key++} className="my-4 border-border" />);
-    } else if (line === "") {
-      flushList();
-    } else {
-      flushList();
-      elements.push(
-        <p
-          key={key++}
-          className="text-sm text-foreground leading-relaxed my-1.5"
-          dangerouslySetInnerHTML={{ __html: inlineFormat(line) }}
-        />
-      );
-    }
-  }
-  flushList();
-
-  return <div className="space-y-0.5">{elements}</div>;
-}
 
 const Results = () => {
   const navigate = useNavigate();
@@ -104,6 +43,12 @@ const Results = () => {
   const [loadingExplanation, setLoadingExplanation] = useState(false);
 
   useEffect(() => {
+    // Use pre-generated explanation from job if available
+    if (result.medical_explanation) {
+      setExplanation(result.medical_explanation);
+      return;
+    }
+    // Fallback: call LLM on demand
     setLoadingExplanation(true);
     explainPrediction(
       result.riskLevel,
@@ -359,27 +304,35 @@ const Results = () => {
 
       {/* Claude LLM Medical Explanation */}
       <Card className="shadow-card border-2 border-primary/10">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-primary" />
-            <CardTitle>Interpretación Médica — Claude AI</CardTitle>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg gradient-medical shadow-sm">
+                <Brain className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Informe Médico — Claude AI</CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  Análisis estructurado generado por inteligencia artificial
+                </CardDescription>
+              </div>
+            </div>
           </div>
-          <CardDescription>
-            Análisis detallado generado por inteligencia artificial
-          </CardDescription>
         </CardHeader>
         <CardContent>
           {loadingExplanation ? (
-            <div className="flex items-center gap-3 text-muted-foreground py-6 justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              <span className="text-sm">Generando explicación médica con Claude AI...</span>
+            <div className="flex flex-col items-center gap-3 text-muted-foreground py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="text-sm">Generando informe médico con Claude AI...</span>
+              <span className="text-xs text-muted-foreground/70">Esto puede tomar unos segundos</span>
             </div>
           ) : explanation ? (
             <MedicalMarkdown text={explanation} />
           ) : (
-            <p className="text-sm text-muted-foreground italic">
-              No se pudo cargar la explicación médica.
-            </p>
+            <div className="flex items-center gap-2 py-6 justify-center text-muted-foreground">
+              <AlertCircle className="h-4 w-4" />
+              <p className="text-sm italic">No se pudo cargar la explicación médica.</p>
+            </div>
           )}
         </CardContent>
       </Card>

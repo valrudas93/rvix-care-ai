@@ -78,7 +78,7 @@ def _call_anthropic(prompt: str) -> str:
         client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
         response = client.messages.create(
             model="claude-opus-4-6",
-            max_tokens=1024,
+            max_tokens=2500,
             system=_ANTHROPIC_SYSTEM,
             messages=[{"role": "user", "content": prompt}],
         )

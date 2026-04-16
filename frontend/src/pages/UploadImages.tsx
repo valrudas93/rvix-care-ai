@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, ImageIcon, FileCheck, X, ArrowRight, Loader2 } from "lucide-react";
+import { Upload, ImageIcon, FileCheck, X, ArrowRight, Loader2, User, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { uploadImagesForAnalysis } from "@/lib/api";
 
@@ -14,6 +14,9 @@ const UploadImages = () => {
   const [mriFiles, setMriFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const activePatientId = localStorage.getItem("activePatientId");
+  const activePatientIdentifier = localStorage.getItem("activePatientIdentifier");
 
   const handleFileSelect = (files: FileList | null, type: "citology" | "mri") => {
     if (!files) return;
@@ -81,6 +84,33 @@ const UploadImages = () => {
           Suba las imágenes de citología cervical y/o resonancia magnética para análisis con IA
         </p>
       </div>
+
+      {/* Patient banner */}
+      {activePatientId ? (
+        <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary-light px-4 py-3">
+          <div className="p-1.5 rounded-full bg-primary/10">
+            <User className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-primary">Paciente activo</p>
+            <p className="text-xs text-muted-foreground">{activePatientIdentifier} · ID interno {activePatientId}</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => navigate("/clinical-data")}>
+            Cambiar
+          </Button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3 rounded-lg border border-yellow-300 bg-yellow-50 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-yellow-800">Sin paciente seleccionado</p>
+            <p className="text-xs text-yellow-700">El análisis se creará sin vinculación a un paciente registrado.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => navigate("/clinical-data")}>
+            Registrar paciente
+          </Button>
+        </div>
+      )}
 
       {/* Citology Upload */}
       <Card className="shadow-card">

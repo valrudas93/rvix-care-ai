@@ -4,38 +4,31 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import { Search, Eye, Calendar, User, AlertCircle, CheckCircle2, AlertTriangle, MapPin, ClipboardList, FileText } from "lucide-react";
+import { Search, Eye, Calendar, User, Brain, Activity, AlertCircle } from "lucide-react";
 import { getAnalysisHistory, HistoryItem } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-
-const riskConfig = {
-  bajo:  { label: "Bajo",   icon: CheckCircle2,   badge: "outline",     color: "text-primary",     bg: "bg-primary-light" },
-  medio: { label: "Medio",  icon: AlertTriangle,  badge: "secondary",   color: "text-yellow-700",  bg: "bg-yellow-50" },
-  alto:  { label: "Alto",   icon: AlertCircle,    badge: "destructive", color: "text-destructive",  bg: "bg-destructive/10" },
-};
-
-const studyTypeLabel: Record<string, string> = {
-  citologia:  "Citología Cervical",
-  resonancia: "Resonancia Magnética",
-};
+import { MedicalMarkdown } from "@/components/MedicalMarkdown";
 
 const History = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
-  const [selected, setSelected] = useState<HistoryItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null);
 
   useEffect(() => {
-    getAnalysisHistory()
-      .then(setHistoryData)
-      .catch((error) => {
+    const loadHistory = async () => {
+      try {
+        const items = await getAnalysisHistory();
+        setHistoryData(items);
+      } catch (error) {
         toast({
           title: "Error",
           description: error instanceof Error ? error.message : "No se pudo cargar el historial",
           variant: "destructive",
         });
-      });
+      }
+    };
+    loadHistory();
   }, [toast]);
 
   const filteredData = historyData.filter((item) =>
@@ -43,11 +36,14 @@ const History = () => {
   );
 
   const getRiskBadge = (risk: string) => {
-    const cfg = riskConfig[risk as keyof typeof riskConfig];
-    if (!cfg) return <Badge variant="outline">{risk.toUpperCase()}</Badge>;
+    const styles: Record<string, string> = {
+      bajo: "border-green-400 text-green-700 bg-green-50",
+      medio: "border-yellow-400 text-yellow-700 bg-yellow-50",
+      alto: "border-red-400 text-red-700 bg-red-50",
+    };
     return (
-      <Badge variant={cfg.badge as any} className="font-medium">
-        {cfg.label}
+      <Badge variant="outline" className={`font-semibold ${styles[risk] ?? ""}`}>
+        {risk.toUpperCase()}
       </Badge>
     );
   };
@@ -76,61 +72,62 @@ const History = () => {
 
       {/* History List */}
       <div className="space-y-4">
-        {filteredData.map((item) => {
-          const cfg = riskConfig[item.risk_level as keyof typeof riskConfig];
-          const Icon = cfg?.icon ?? CheckCircle2;
-          return (
-            <Card key={item.prediction_id} className="shadow-card hover:shadow-medical transition-all">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-primary" />
-                      <CardTitle className="text-lg">{item.patient_identifier}</CardTitle>
-                    </div>
-                    <CardDescription className="flex items-center gap-2">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(item.date).toLocaleDateString("es-ES", {
-                        year: "numeric", month: "long", day: "numeric",
-                      })}
-                    </CardDescription>
+        {filteredData.map((item) => (
+          <Card key={item.prediction_id} className="shadow-card hover:shadow-medical transition-all">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-lg">{item.patient_identifier}</CardTitle>
                   </div>
-                  {getRiskBadge(item.risk_level)}
+                  <CardDescription className="flex items-center gap-2">
+                    <Calendar className="h-3 w-3" />
+                    {new Date(item.date).toLocaleDateString("es-ES", {
+                      year: "numeric", month: "long", day: "numeric",
+                    })}
+                  </CardDescription>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-4 mb-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Tipo de Imagen</p>
-                    <p className="text-sm font-medium">{studyTypeLabel[item.study_type] ?? item.study_type}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Riesgo Detectado</p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Icon className={`h-4 w-4 ${cfg?.color ?? ""}`} />
-                      <p className={`text-sm font-medium ${cfg?.color ?? ""}`}>{cfg?.label ?? item.risk_level}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Confianza</p>
-                    <p className="text-sm font-medium">{item.confidence}%</p>
-                  </div>
-                  <div className="flex items-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => setSelected(item)}
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      Ver Detalles
-                    </Button>
-                  </div>
+                {getRiskBadge(item.risk_level)}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Tipo de Imagen</p>
+                  <p className="text-sm font-medium capitalize">{item.study_type}</p>
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                <div>
+                  <p className="text-xs text-muted-foreground">Confianza</p>
+                  <p className="text-sm font-medium">{item.confidence}%</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Informe LLM</p>
+                  <p className="text-sm font-medium">
+                    {item.medical_explanation ? (
+                      <span className="text-green-600 flex items-center gap-1">
+                        <Brain className="h-3 w-3" /> Disponible
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">No generado</span>
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setSelectedItem(item)}
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    Ver Consulta
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {filteredData.length === 0 && (
@@ -141,99 +138,89 @@ const History = () => {
         </Card>
       )}
 
-      {/* Detail Sheet */}
-      <Sheet open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          {selected && (() => {
-            const cfg = riskConfig[selected.risk_level as keyof typeof riskConfig];
-            const Icon = cfg?.icon ?? CheckCircle2;
-            return (
-              <>
-                <SheetHeader className="mb-4">
-                  <SheetTitle className="text-xl">Detalles del Análisis</SheetTitle>
-                </SheetHeader>
+      {/* Detail Sheet — consulta completa */}
+      <Sheet open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+          {selectedItem && (
+            <>
+              <SheetHeader className="pb-4 border-b border-border">
+                <SheetTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-primary" />
+                  Consulta — {selectedItem.patient_identifier}
+                </SheetTitle>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(selectedItem.date).toLocaleDateString("es-ES", {
+                    weekday: "long", year: "numeric", month: "long", day: "numeric",
+                  })}
+                </p>
+              </SheetHeader>
 
-                {/* Patient + date summary */}
-                <div className={`flex items-center gap-3 p-4 rounded-lg ${cfg?.bg ?? "bg-muted"} mb-4`}>
-                  <Icon className={`h-6 w-6 flex-shrink-0 ${cfg?.color ?? ""}`} />
-                  <div className="flex-1">
-                    <p className="font-semibold">{selected.patient_identifier}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {studyTypeLabel[selected.study_type] ?? selected.study_type} ·{" "}
-                      {new Date(selected.date).toLocaleDateString("es-ES", {
-                        year: "numeric", month: "long", day: "numeric",
-                      })}
-                    </p>
+              <div className="mt-6 space-y-5">
+                {/* Risk summary */}
+                <div className="flex items-center justify-between rounded-lg border p-4 bg-muted/30">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground mb-1">Nivel de Riesgo</p>
+                    {getRiskBadge(selectedItem.risk_level)}
                   </div>
-                  {getRiskBadge(selected.risk_level)}
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="p-3 rounded-lg bg-muted">
-                    <p className="text-xs text-muted-foreground">Nivel de Riesgo</p>
-                    <p className={`text-lg font-bold ${cfg?.color ?? ""}`}>{cfg?.label ?? selected.risk_level}</p>
+                  <div className="text-right space-y-1">
+                    <p className="text-xs text-muted-foreground">Confianza</p>
+                    <p className="text-2xl font-bold text-primary">{selectedItem.confidence}%</p>
                   </div>
-                  <div className="p-3 rounded-lg bg-muted">
-                    <p className="text-xs text-muted-foreground">Confianza del Modelo</p>
-                    <p className="text-lg font-bold">{selected.confidence}%</p>
+                  <div className="text-right space-y-1">
+                    <p className="text-xs text-muted-foreground">Tipo estudio</p>
+                    <p className="text-sm font-medium capitalize">{selectedItem.study_type}</p>
                   </div>
                 </div>
 
                 {/* Detected regions */}
-                {selected.detected_regions.length > 0 && (
-                  <>
-                    <Separator className="my-4" />
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        <p className="font-medium text-sm">Hallazgos Detectados</p>
-                      </div>
-                      <ul className="space-y-1 pl-6">
-                        {selected.detected_regions.map((r, i) => (
-                          <li key={i} className="text-sm text-muted-foreground list-disc">{r}</li>
-                        ))}
-                      </ul>
+                {selectedItem.detected_regions.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-primary" /> Regiones Detectadas
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedItem.detected_regions.map((r, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{r}</Badge>
+                      ))}
                     </div>
-                  </>
+                  </div>
                 )}
 
                 {/* Recommendations */}
-                {selected.recommendations.length > 0 && (
-                  <>
-                    <Separator className="my-4" />
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <ClipboardList className="h-4 w-4 text-primary" />
-                        <p className="font-medium text-sm">Recomendaciones</p>
-                      </div>
-                      <ul className="space-y-1 pl-6">
-                        {selected.recommendations.map((r, i) => (
-                          <li key={i} className="text-sm text-muted-foreground list-disc">{r}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </>
+                {selectedItem.recommendations.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold mb-2">Recomendaciones</p>
+                    <ul className="space-y-1.5">
+                      {selectedItem.recommendations.map((rec, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
+                          {rec}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
 
-                {/* Medical explanation */}
-                {selected.medical_explanation && (
-                  <>
-                    <Separator className="my-4" />
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-primary" />
-                        <p className="font-medium text-sm">Explicación Médica (IA)</p>
-                      </div>
-                      <div className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted p-3 rounded-lg">
-                        {selected.medical_explanation}
-                      </div>
+                {/* LLM explanation */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1.5 rounded-lg gradient-medical shadow-sm">
+                      <Brain className="h-3.5 w-3.5 text-white" />
                     </div>
-                  </>
-                )}
-              </>
-            );
-          })()}
+                    <p className="text-sm font-semibold">Informe Médico — Claude AI</p>
+                  </div>
+                  {selectedItem.medical_explanation ? (
+                    <MedicalMarkdown text={selectedItem.medical_explanation} />
+                  ) : (
+                    <div className="flex items-center gap-2 py-4 text-muted-foreground">
+                      <AlertCircle className="h-4 w-4" />
+                      <p className="text-sm italic">Informe no disponible para este análisis.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </SheetContent>
       </Sheet>
     </div>

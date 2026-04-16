@@ -175,6 +175,7 @@ export interface AnalysisResult {
     status: string;
     findings: string;
   };
+  medical_explanation?: string | null;
 }
 
 export interface JobStatus {
